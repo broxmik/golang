@@ -1,19 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+	"github.com/russross/blackfriday"
 )
 
 func main() {
-	http.HandleFunc("/", hello)
-	fmt.Println("listening...")
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		panic(err)
-	}
+	http.HandleFunc("/markdown", GenerateMarkdown)
+	http.Handle("/", http.FileServer(http.Dir("public")))
+	http.ListenAndServe(":8080", nil)
 }
 
-func hello(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(res, "hello, world")
+func GenerateMarkdown(rw http.ResponseWriter, r *http.Request) {
+	markdown := blackfriday.MarkdownCommon([]byte(r.FormValue("body")))
+	rw.Write(markdown)
 }
